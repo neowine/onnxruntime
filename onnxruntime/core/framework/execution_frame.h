@@ -19,6 +19,7 @@
 
 namespace onnxruntime {
 
+class DataTransferManager;
 class SessionState;
 class OrtValueNameIdxMap;
 class OrtValuePatternPlanner;
@@ -35,6 +36,7 @@ class IExecutionFrame {
 
   void Init(const std::vector<int>& feed_mlvalue_idxs, const std::vector<OrtValue>& feeds,
             const std::unordered_map<int, OrtValue>& initializers,
+            const GraphViewer& graph_viewer,
             const std::vector<OrtValue>& fetches);
 
  public:
@@ -109,6 +111,8 @@ class IExecutionFrame {
 
   virtual Status CopyTensor(const Tensor& src, Tensor& dest) const = 0;
 
+  virtual const DataTransferManager& GetDataTransferManager() const = 0;
+
   virtual bool IsAllocatedExternally(int /*ort_value_idx*/) {
     return false;
   }
@@ -123,6 +127,8 @@ class IExecutionFrame {
   const size_t all_values_size_;
 
   std::vector<int> fetch_mlvalue_idxs_;
+
+  const OrtValueNameIdxMap& ort_value_idx_map_;
 };
 
 class ExecutionFrame final : public IExecutionFrame {
@@ -185,6 +191,7 @@ class ExecutionFrame final : public IExecutionFrame {
   Status CreateNodeOutputMLValueImpl(OrtValue& ort_value, int ort_value_idx, const TensorShape* shape, size_t nnz) override;
   void VerifyOutputSizes(int output_index, const Node& node, const TensorShape& output_shape) override;
   Status CopyTensor(const Tensor& src, Tensor& dest) const override;
+  const DataTransferManager& GetDataTransferManager() const override;
 
   common::Status AllocateAsPerAllocationPlan(OrtValue& ort_value, int ort_value_index, const TensorShape* shape,
                                              size_t nnz);
