@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 import {env} from 'onnxruntime-common';
+import * as path from 'path';
+
 import {OrtWasmModule} from './binding/ort-wasm';
 import ortWasmFactoryThreaded from './binding/ort-wasm-threaded.js';
 import ortWasmFactory from './binding/ort-wasm.js';
@@ -15,7 +17,9 @@ const isMultiThreadSupported = (): boolean => {
   try {
     // Test for transferability of SABs (needed for Firefox)
     // https://groups.google.com/forum/#!msg/mozilla.dev.platform/IHkBZlHETpA/dwsMNchWEQAJ
-    new MessageChannel().port1.postMessage(new SharedArrayBuffer(1));
+    if (typeof MessageChannel !== 'undefined') {
+      new MessageChannel().port1.postMessage(new SharedArrayBuffer(1));
+    }
     // This typed array is a WebAssembly program containing threaded
     // instructions.
     return WebAssembly.validate(new Uint8Array([
@@ -65,9 +69,13 @@ export const initializeWebAssembly = async(): Promise<void> => {
     const config: Partial<OrtWasmModule> = {};
 
     if (useThreads) {
-      config.mainScriptUrlOrBlob = new Blob(
-          [`var ortWasmThreaded=(function(){var _scriptDir;return ${ortWasmFactoryThreaded.toString()}})();`],
-          {type: 'text/javascript'});
+      if (typeof Blob === 'undefined') {
+        config.mainScriptUrlOrBlob = path.join(__dirname, 'ort-wasm-threaded.js');
+      } else {
+        const scriptSourceCode =
+            `var ortWasmThreaded=(function(){var _scriptDir;return ${ortWasmFactoryThreaded.toString()}})();`;
+        config.mainScriptUrlOrBlob = new Blob([scriptSourceCode], {type: 'text/javascript'});
+      }
     }
 
     factory(config).then(

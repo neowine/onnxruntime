@@ -139,6 +139,7 @@ function buildTestRunnerConfig({
       'fs': 'fs',
       'perf_hooks': 'perf_hooks',
       'worker_threads': 'worker_threads',
+      '../../node': '../../node'
     },
     resolve: {
       extensions: ['.ts', '.js'],
@@ -170,7 +171,7 @@ function buildTestRunnerConfig({
 
 module.exports = () => {
   const args = minimist(process.argv);
-  const bundleMode = args['bundle-mode'] || 'prod';  // 'prod'|'dev'|'perf'|undefined;
+  const bundleMode = args['bundle-mode'] || 'prod';  // 'prod'|'dev'|'perf'|'node'|undefined;
   const builds = [];
 
   switch (bundleMode) {
@@ -193,7 +194,10 @@ module.exports = () => {
         buildOrtWebConfig({ suffix: '.es6.min', target: 'es6' }),
         // ort-web.es6.js
         buildOrtWebConfig({ suffix: '.es6', mode: 'development', devtool: 'inline-source-map', target: 'es6' }),
+      );
 
+    case 'node':
+      builds.push(
         // ort-web.node.js
         buildOrtWebConfig({ suffix: '.node', format: 'commonjs' }),
       );
