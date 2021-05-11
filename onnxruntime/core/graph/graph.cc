@@ -1500,12 +1500,7 @@ Status Graph::BuildConnections(std::unordered_set<std::string>& outer_scope_node
             // Ignore a Fused node as it could have moved things like initializers to a different device
             // (they're internally available to the fused node but removed from the Graph instance).
             // Fusion happens after the model was loaded in full so we know the inputs were valid originally.
-            bool check = node.NodeType() != Node::Type::Fused;
-#if defined(ENABLE_TRAINING)
-            // Only check initial model load for training as graph modifications there also render inputs 'invalid'.
-            check = check && num_resolves_ == 0;
-#endif
-            if (check &&
+            if (node.NodeType() != Node::Type::Fused &&
                 resolve_context_.inputs_and_initializers.find(input_arg_name) ==
                     resolve_context_.inputs_and_initializers.cend() &&
                 // if we're manually creating a Graph for use as a subgraph the outer scope names are manually set
