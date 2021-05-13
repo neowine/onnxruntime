@@ -59,10 +59,12 @@ See [Build instructions](../../how-to/build/eps.md#vitis-ai).
 
     While it is possible to install all of these software components individually, a script has been provided to automatically install them at once. To do so:
       * Run the following commands:
-        ```
-        cd Vitis-AI/alveo/packages
+        ```        
+        cd /vitis_ai_home/setup/alveo/u200_u250/packages
+        # Run install script as root
         sudo su
         ./install.sh
+
         ```
       * Power cycle the system.
 5. Build and start the ONNXRuntime Vitis-AI Docker Container.
